@@ -29,9 +29,10 @@ if __name__ == "__main__":
     mask = np.array([True]*(dim * (2 + dim) + 1))
     mask[dim:dim + dim*dim] = alpha_mask.ravel()
 
-    positions_red = [0, 1, 2, 5, 6, 7, 8, 9, 12, 14, 15, 16, 18]
-    positions_red = np.array(positions_red)
-    indices_red = [0, 3, 9, 12,13]
+    positions_red = positions[mask]
+    print(positions_red)
+    #positions_red = np.array(positions_red)
+    indices_red = [0, dim, dim + int(np.sum(alpha_mask)), 2 * dim + int(np.sum(alpha_mask)),2 * dim + int(np.sum(alpha_mask)) + 1]
 
     labels = [["$\\mu_1$", "$\\mu_2$", "$\\mu_3$"]]
 
@@ -53,23 +54,23 @@ if __name__ == "__main__":
     #   patch.set_facecolor("paleturquoise")
 
     noisedNlogN = pd.read_csv('saved_estimations/realdata_estimation_noised_NlogN.csv', sep=',', header=None, index_col=None).to_numpy()
-    print(noisedNlogN.shape)
     for i in range(4):
-        print(i)
+        #print(i)
         bplot = ax[i].boxplot(noisedNlogN[:, indices[i]:indices[i+1]], widths=0.2, positions=positions[indices[i]:indices[i+1]], tick_labels=labels[i],
                            patch_artist=True, label=r"$\mathcal{Q}$")
         for patch in bplot['boxes']:
             patch.set_facecolor("paleturquoise")
     alpha_est_noised = noisedNlogN[:, dim:dim+dim**2].reshape((5,3,3))
+    mean = np.mean(noisedNlogN, axis=0)
+    print(np.round(mean,2), np.round(np.std(noisedNlogN, axis=0, ddof=1), 2))
     #print([np.max(np.abs(np.linalg.eig(u)[0])) for u in alpha_est_noised])
-    print("noisedNlogN", np.quantile(alpha_est_noised, axis=0, q=0.05, method="closest_observation"))
-    print("noisedNlogN", alpha_est_noised)
-    print("noisedNlogN", np.mean(alpha_est_noised < 2e-16, axis=0))
+    #print("noisedNlogN", np.quantile(alpha_est_noised, axis=0, q=0.05, method="closest_observation"))
+    #print("noisedNlogN", alpha_est_noised)
+    print("noisedNlogN percentages: ", np.mean(alpha_est_noised < 2e-16, axis=0))
 
     noisedNlogN = pd.read_csv('saved_estimations/realdata_estimation_noised_red_NlogN.csv', sep=',', header=None,
                               index_col=None).to_numpy()
     for i in range(4):
-        print(positions_red[indices_red[i]:indices_red[i+1]])
         dat = noisedNlogN[:, indices_red[i]:indices_red[i+1]]
         bplot = ax[i].boxplot(dat, widths=0.2, positions=positions_red[indices_red[i]:indices_red[i+1]] + 0.2, tick_labels=[""]*(dat.shape[1]),
                            patch_artist=True, label=r"$\mathcal{Q}_{\Lambda}$")
@@ -77,15 +78,11 @@ if __name__ == "__main__":
             patch.set_facecolor("cornflowerblue")
 
     alpha_est_noised = noisedNlogN[:, dim:dim + dim ** 2].reshape((5, 3, 3))
+    mean = np.mean(noisedNlogN, axis=0)
+    print(np.round(mean,2), np.round(np.std(noisedNlogN, axis=0, ddof=1), 2))
     #print([np.max(np.abs(np.linalg.eig(u)[0])) for u in alpha_est_noised])
-    print("noisedNlogN", np.mean(alpha_est_noised < 2e-16, axis=0))
-    #
-    # #unnoisedN = pd.read_csv('saved_estimations/realdata_estimation_unnoised_N.csv', sep=',', header=None, index_col=None)
-    # #bplot = ax.boxplot(unnoisedN, positions=positions[:-1] + 0.4, widths=0.2, tick_labels=[""]*15,
-    # #                   patch_artist=True, label="unnoised N")
-    # #for patch in bplot['boxes']:
-    # #    patch.set_facecolor("silver")
-    #
+    print("noisedNlogN reduced percentages: ", np.mean(alpha_est_noised < 2e-16, axis=0))
+
     unnoisedNlogN = pd.read_csv("saved_estimations/realdata_estimation_unnoised_NlogN.csv", sep=',', header=None, index_col=None).to_numpy()
     for i in range(3):
         dat = unnoisedNlogN[:, indices[i]:indices[i + 1]]
@@ -95,14 +92,13 @@ if __name__ == "__main__":
         for patch in bplot['boxes']:
             patch.set_facecolor("slategrey")
     alpha_est_unnoised = unnoisedNlogN[:, dim:dim + dim ** 2].reshape((5, 3, 3))
-    #print([np.max(np.abs(np.linalg.eig(u)[0])) for u in alpha_est_unnoised])
+    mean = np.mean(unnoisedNlogN, axis=0)
+    print(np.round(mean,2), np.round(np.std(unnoisedNlogN, axis=0, ddof=1), 2))
 
     ax[1].legend()
     ax[1].set_ylim((-0.1, 2.5))
-    #frontiers = positions[[dim, dim + dim * dim, -1]]
-    #for front in frontiers:
-    #    ax.plot([front - 0.5]*2, ax.get_ylim(), c="k", alpha=0.75, linestyle="--")
+
     #plt.savefig("real_data_estimation_boxplots.pdf", format="pdf", bbox_inches="tight")
 
-    #plt.show()
+    plt.show()
 
