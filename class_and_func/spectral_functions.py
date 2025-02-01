@@ -37,15 +37,20 @@ def fast_multi_periodogram(K, tList, max_time, precision=1e-9):
     return aux
 
 
-def fast_multi_periodogram_window(K, tList, max_time, window, precision=1e-9):
+def fast_multi_periodogram_window(tList, max_time, window, precision=1e-9, debiased=True):
+    # Computes the periodogram in a window [-window, window] with a step of 1/max_time.
     dim = int(np.max(np.array(tList)[:, 1]))
+    K = int(np.ceil(window * max_time))
+
     dimensional_times = [[t for t, i in tList if i == j] for j in range(1, dim + 1)]
 
     # put K for w=0
-    aux = np.array([finufft.nufft1d1(2 * np.pi * window * np.array(x) / max_time, np.ones(len(x)) + 0j, n_modes=2 * K + 1,
-                                     isign=-1, eps=1e-9)[K + 1:] for x in dimensional_times])
+    aux = np.array([finufft.nufft1d1(2 * np.pi * np.array(x) / max_time, np.ones(len(x)) + 0j, n_modes=2 * K + 1,
+                                     isign=-1, eps=1e-9) for x in dimensional_times])
     aux = (aux.T)[:, :, np.newaxis]
     aux = (aux @ np.transpose(np.conj(aux), axes=(0, 2, 1))) / max_time
+    if debiased:
+        aux[K] = 0 # Remove value at v = 0.
 
     return aux
 
