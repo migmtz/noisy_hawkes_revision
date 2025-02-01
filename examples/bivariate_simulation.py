@@ -1,10 +1,9 @@
 from class_and_func.simulation_exponential_hawkes import multivariate_exponential_hawkes
-from class_and_func.spectral_functions import multivariate_periodogram, spectral_multivariate_noised_ll_trinf
 import numpy as np
-from scipy.optimize import minimize
 from matplotlib import pyplot as plt
-from scipy.linalg import norm
-import time
+import seaborn as sns
+
+sns.set_theme()
 
 
 if __name__ == "__main__":

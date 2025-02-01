@@ -1,6 +1,9 @@
 from class_and_func.simulation_exponential_hawkes import multivariate_exponential_hawkes
 import numpy as np
 from matplotlib import pyplot as plt
+import seaborn as sns
+
+sns.set_theme()
 
 
 if __name__ == "__main__":
