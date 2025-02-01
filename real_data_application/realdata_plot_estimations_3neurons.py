@@ -7,7 +7,7 @@ import pandas as pd
 sns.set_theme()
 
 sns.set_context("paper", rc={"font.size":14,"axes.titlesize":16, 'axes.labelsize': 14,
-                             'xtick.labelsize': 14,'ytick.labelsize': 14, 'legend.fontsize': 10,
+                             'xtick.labelsize': 14,'ytick.labelsize': 14, 'legend.fontsize': 14,
                              })
 
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     #print("noisedNlogN", alpha_est_noised)
     print("noisedNlogN percentages: ", np.mean(alpha_est_noised < 2e-16, axis=0))
 
-    noisedNlogN = pd.read_csv('saved_estimations/realdata_estimation_noised_red_NlogN.csv', sep=',', header=None,
+    noisedNlogN = pd.read_csv('saved_estimations/realdata_estimation_noised_red_NlogN_anna.csv', sep=',', header=None,
                               index_col=None).to_numpy()
     for i in range(4):
         dat = noisedNlogN[:, indices_red[i]:indices_red[i+1]]
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     ax[1].legend()
     ax[1].set_ylim((-0.1, 2.5))
 
-    #plt.savefig("real_data_estimation_boxplots.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig("real_data_estimation_boxplots.pdf", format="pdf", bbox_inches="tight")
 
     plt.show()
 
