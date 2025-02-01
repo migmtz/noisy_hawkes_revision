@@ -66,5 +66,5 @@ if __name__ == "__main__":
 
         ax[0].set_ylim((-0.05, 2.05))
 
-    fig.savefig("graphics/column_triangle_model_estimation22.pdf", format="pdf", bbox_inches="tight")
+    fig.savefig("graphics/column_triangle_model_estimation.pdf", format="pdf", bbox_inches="tight")
     plt.show()
