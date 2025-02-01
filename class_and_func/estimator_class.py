@@ -3,11 +3,11 @@ from scipy.optimize import minimize
 from class_and_func.spectral_functions import *
 
 
-class old_univariate_spectral_noised_estimator(object):
+class univariate_spectral_noised_estimator(object):
     def __init__(self, fixed_parameter, loss=spectral_log_likelihood_grad_precomputed, grad=True, initial_guess="random", options=None):
         self.idx_param, self.fixed_parameter = fixed_parameter
         self.loss = loss
-        self.grad = True  # By default, uses grad version of spectral ll
+        self.grad = grad  # By default, uses grad version of spectral ll
         self.initial_guess = initial_guess
 
         if options is None:
@@ -27,7 +27,6 @@ class old_univariate_spectral_noised_estimator(object):
 
         # Initial point
         if isinstance(self.initial_guess, str) and self.initial_guess == "random":
-            np.random.seed()
             init_a = np.random.uniform(0, 3, 3)
             init_alpha = np.random.uniform(0, 1, (self.dim, self.dim))
 
