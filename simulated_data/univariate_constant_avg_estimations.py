@@ -1,20 +1,23 @@
 import numpy as np
 from class_and_func.simulation_exponential_hawkes import multivariate_exponential_hawkes
-from class_and_func.estimator_class import univariate_spectral_noised_estimator
+from class_and_func.estimator_class import old_univariate_spectral_noised_estimator
 from class_and_func.spectral_functions import fast_multi_periodogram
 from multiprocessing import Pool
 import time
 
 
-def job(it, periodo, max_time, fixed_parameter):
-    np.random.seed(it)
+def old_job(it, periodo, max_time, fixed_parameter):
+    np.random.seed(it+100)
 
-    estimator = univariate_spectral_noised_estimator(fixed_parameter)
+    estimator = old_univariate_spectral_noised_estimator(fixed_parameter)
+    start_time = time.time()
     res = estimator.fit(periodo, max_time)
+    end_time = time.time()
 
+    aux = np.concatenate((res.x, np.array([end_time-start_time])))
     print('-', end='')
 
-    return res.x
+    return aux
 
 
 if __name__ == "__main__":
@@ -22,10 +25,10 @@ if __name__ == "__main__":
     alpha = np.array([[0.5]])
     beta = np.array([[1.0]])
 
-    noise_list = [0.2 * i for i in range(1, 11)]
+    noise_list = [1.0]#[0.2 * i for i in range(1, 11)]
     avg_total_intensity = 4.0
 
-    max_time = 1000
+    max_time = 8000
     burn_in = -100
     repetitions = 50
 
@@ -49,17 +52,16 @@ if __name__ == "__main__":
             hp = multivariate_exponential_hawkes(mu, alpha, beta, max_time=max_time, burn_in=burn_in)
             hp.simulate()
             hp_times = hp.timestamps
-            print("lenH", len(hp_times), max_time * mu/(1-alpha))
+            #print("lenH", len(hp_times), max_time * mu/(1-alpha))
 
             pp = multivariate_exponential_hawkes(noise * np.ones((1, 1)), 0 * alpha, beta, max_time=max_time,
                                                  burn_in=burn_in)
             pp.simulate()
             pp_times = pp.timestamps
-            print("lenP", len(pp_times), max_time*noise)
+            #print("lenP", len(pp_times), max_time*noise)
 
             idx = np.argsort(pp_times[1:-1] + hp_times, axis=0)[:, 0]
             parasited_times = np.array(pp_times[1:-1] + hp_times)[idx]
-            print("Par:", parasited_times[0:5])
 
             K = K_func(parasited_times.shape[0])
             periodogram = fast_multi_periodogram(K, parasited_times, max_time)
@@ -74,14 +76,14 @@ if __name__ == "__main__":
             print('|' + '-' * (repetitions) + '|')
             print('|', end='')
             start_time = time.time()
-            with Pool(5) as p:
+            with Pool(6) as p:
                 estimations = np.array(
-                    p.starmap(job, zip(range(repetitions), periodogram_list, [max_time] * (repetitions),[fixed_parameter] * (repetitions))))
+                    p.starmap(old_job, zip(range(repetitions), periodogram_list, [max_time] * (repetitions),[fixed_parameter] * (repetitions))))
             print('|\n Done')
             end_time = time.time()
             print("Estimation time:", end_time - start_time)
             print(estimations)
             print("*"*100)
 
-            np.savetxt("saved_estimations_univariate/1000univariate_fixed_"+ fixed_list[j] + "_" + str(np.round(noise, 2)) + ".csv", estimations,
+            np.savetxt("saved_estimations_univariate/cst_intensity/8000uni_cst_fixed_"+ fixed_list[j] + "_" + str(np.round(noise, 2)) + ".csv", estimations,
                        delimiter=",")

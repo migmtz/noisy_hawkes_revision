@@ -13,7 +13,7 @@ def f_1(n):
 def f_2(n):
     # M = N(T) log N(T)
     return int(n * np.log(n))
-
+#TO CHECK
 
 if __name__ == "__main__":
 
