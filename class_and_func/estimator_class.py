@@ -3,15 +3,15 @@ from scipy.optimize import minimize
 from class_and_func.spectral_functions import *
 
 
-class univariate_spectral_noised_estimator(object):
-    def __init__(self, fixed_parameter, loss=uni_grad_ll_mask, grad=True, initial_guess="random", options=None):
-        self.fixed_parameter = fixed_parameter
+class old_univariate_spectral_noised_estimator(object):
+    def __init__(self, fixed_parameter, loss=spectral_log_likelihood_grad_precomputed, grad=True, initial_guess="random", options=None):
+        self.idx_param, self.fixed_parameter = fixed_parameter
         self.loss = loss
-        self.grad = True  # By default uses grad version of spectral ll
+        self.grad = True  # By default, uses grad version of spectral ll
         self.initial_guess = initial_guess
 
         if options is None:
-            self.options = {'disp': False,"maxls":40}
+            self.options = {'disp': False}#,"maxls":40}
         else:
             self.options = options
 
@@ -34,30 +34,16 @@ class univariate_spectral_noised_estimator(object):
             init = np.concatenate((init_a[0].ravel(), init_alpha.ravel(), init_a[1:].ravel()))
 
         # Mask of non-fixed parameters
-        indices = [i != self.fixed_parameter[0] for i in range(4)]
+        indices = [i != self.idx_param for i in range(4)]
         bounds = np.array(bounds)[indices]
         init = init[indices]
 
-        # else:
-        #    param_mask = np.array([True]*(self.dim * (2 + self.dim) + 1))
-        # Estimation
         self.res = minimize(self.loss,
-                            init, tol=1e-8,
+                            init, tol=1e-16,
                             method="L-BFGS-B", jac=self.grad,
-                            args=(periodogram, K, max_time, self.fixed_parameter),
+                            args=(K, periodogram, max_time, self.idx_param,self.fixed_parameter.ravel()),
                             bounds=bounds, options=self.options)
 
-        # theta_estim = np.zeros((self.dim * (2+self.dim) + 1))
-
-        # true_indices = np.where(param_mask)[0]
-        # theta_estim[true_indices] = self.res.x[:len(true_indices)]
-
-        # self.mu_estim = theta_estim[0: self.dim].reshape((self.dim, 1))
-        # self.alpha_estim = theta_estim[self.dim: -self.dim-1].reshape((self.dim, self.dim))
-        # self.beta_estim = theta_estim[-self.dim-1:-1].reshape((self.dim, 1))
-        # self.noise_estim = theta_estim[-1]
-
-        # return self.mu_estim, self.alpha_estim, self.beta_estim, self.noise_estim
         return self.res
 
 
@@ -69,7 +55,7 @@ class multivariate_spectral_unnoised_estimator(object):
         self.mask = mask
 
         if options is None:
-            self.options = {'disp': False}
+            self.options = {'disp': False, "maxiter":1000}
         else:
             self.options = options
 
@@ -110,16 +96,6 @@ class multivariate_spectral_unnoised_estimator(object):
                             args=(periodogram, K, max_time, self.mask),
                             bounds=bounds, options=self.options)
 
-        theta_estim = np.zeros((self.dim * (2 + self.dim)))
-
-        true_indices = np.where(param_mask)[0]
-        theta_estim[true_indices] = self.res.x[:len(true_indices)]
-
-        self.mu_estim = theta_estim[0: self.dim].reshape((self.dim, 1))
-        self.alpha_estim = theta_estim[self.dim: -self.dim].reshape((self.dim, self.dim))
-        self.beta_estim = theta_estim[-self.dim:].reshape((self.dim, 1))
-
-        #return self.mu_estim, self.alpha_estim, self.beta_estim, self.noise_estim
         return self.res
 
 
@@ -172,15 +148,4 @@ class multivariate_spectral_noised_estimator(object):
                             args=(periodogram, K, max_time, self.mask),
                             bounds=bounds, options=self.options)
 
-        theta_estim = np.zeros((self.dim * (2 + self.dim) + 1))
-
-        true_indices = np.where(param_mask)[0]
-        theta_estim[true_indices] = self.res.x[:len(true_indices)]
-
-        self.mu_estim = theta_estim[0: self.dim].reshape((self.dim, 1))
-        self.alpha_estim = theta_estim[self.dim: -self.dim - 1].reshape((self.dim, self.dim))
-        self.beta_estim = theta_estim[-self.dim - 1:-1].reshape((self.dim, 1))
-        self.noise_estim = theta_estim[-1]
-
-        #return self.mu_estim, self.alpha_estim, self.beta_estim, self.noise_estim
         return self.res
