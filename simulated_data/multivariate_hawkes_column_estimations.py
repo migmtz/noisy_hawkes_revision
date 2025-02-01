@@ -8,6 +8,18 @@ from class_and_func.spectral_functions import fast_multi_periodogram
 
 def job(it, periodo, max_time):
     np.random.seed(it)
+    mask = np.array([[True, True],
+                     [True, True]])
+    estimator = multivariate_spectral_noised_estimator(mask=mask)
+    res = estimator.fit(periodo, max_time)
+
+    print('-', end='')
+
+    return res.x
+
+
+def reduced_job(it, periodo, max_time):
+    np.random.seed(it)
     mask = np.array([[True, False],
                      [True, False]])
     estimator = multivariate_spectral_noised_estimator(mask=mask)
@@ -22,7 +34,7 @@ if __name__ == "__main__":
     # Parameters
     mu = np.array([[1.0],
                    [1.0]])
-    alpha = np.array([[0.5, 0.0],
+    alpha = np.array([[0.0, 0.0],
                       [0.4, 0.4]])
     beta = np.array([[1.0],
                      [1.3]])
@@ -35,11 +47,12 @@ if __name__ == "__main__":
     repetitions = 50
 
     K_func = lambda x : int(x)
-    # K_func = lambda x: int(x * np.log(x))
 
     # Simulations and periodograms
 
     periodogram_list = []
+
+    n = 0
 
     start_time = time.time()
     for it in range(repetitions):
@@ -54,6 +67,7 @@ if __name__ == "__main__":
 
         idx = np.argsort(pp_times[1:-1] + hp_times, axis=0)[:, 0]
         parasited_times = np.array(pp_times[1:-1] + hp_times)[idx]
+        n += len(parasited_times)
 
         K = K_func(parasited_times.shape[0])
         periodogram = fast_multi_periodogram(K, parasited_times, max_time)
@@ -63,6 +77,7 @@ if __name__ == "__main__":
     end_time = time.time()
     print("Periodogram time:", end_time - start_time)
 
+    print("Estimation in full model:")
     print('|' + '-' * (repetitions) + '|')
     print('|', end='')
     start_time = time.time()
@@ -73,5 +88,18 @@ if __name__ == "__main__":
     end_time = time.time()
     print("Estimation time:", end_time - start_time)
 
-    np.savetxt("saved_estimations/multivariate_column_red_" + str(max_time) + ".csv", estimations, delimiter=",")
+    np.savetxt("saved_estimations/multivariate_column_" + str(max_time) + ".csv", estimations, delimiter=",")
 
+    print("")
+    print("Estimation in reduced model:")
+    print('|' + '-' * (repetitions) + '|')
+    print('|', end='')
+    start_time = time.time()
+    with Pool(5) as p:
+        reduced_estimations = np.array(p.starmap(reduced_job, zip(range(repetitions), periodogram_list, [max_time] * (repetitions))))
+    print('|\n Done')
+    # estimations = np.array([job(it, periodo) for it, periodo in zip(range(repetitions), periodogram_list)])
+    end_time = time.time()
+    print("Estimation time:", end_time - start_time)
+
+    np.savetxt("saved_estimations/multivariate_column_red_" + str(max_time) + ".csv", reduced_estimations, delimiter=",")

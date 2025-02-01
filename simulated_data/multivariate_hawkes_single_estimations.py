@@ -18,8 +18,8 @@ def job(it, periodo, max_time):
 
 def reduced_job(it, periodo, max_time):
     np.random.seed(it)
-    mask = np.array([[True, False],
-                     [True, True]])
+    mask = np.array([[False, False],
+                     [True, False]])
     estimator = multivariate_spectral_noised_estimator(mask=mask)
     res = estimator.fit(periodo, max_time)
 
@@ -32,8 +32,8 @@ if __name__ == "__main__":
     # Parameters
     mu = np.array([[1.0],
                    [1.0]])
-    alpha = np.array([[0.5, 0.0],
-                      [0.4, 0.4]])
+    alpha = np.array([[0.0, 0.0],
+                      [0.4, 0.0]])
     beta = np.array([[1.0],
                      [1.3]])
     noise = 0.5
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     end_time = time.time()
     print("Estimation time:", end_time - start_time)
 
-    np.savetxt("saved_estimations/multivariate_triangle_" + str(max_time) + ".csv", estimations, delimiter=",")
+    np.savetxt("saved_estimations/multivariate_single_" + str(max_time) + ".csv", estimations, delimiter=",")
 
     print("")
     print("Estimation in reduced model:")
@@ -98,5 +98,5 @@ if __name__ == "__main__":
     end_time = time.time()
     print("Estimation time:", end_time - start_time)
 
-    np.savetxt("saved_estimations/multivariate_triangle_red_" + str(max_time) + ".csv", reduced_estimations,
+    np.savetxt("saved_estimations/multivariate_single_red_" + str(max_time) + ".csv", reduced_estimations,
                delimiter=",")
